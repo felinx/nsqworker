@@ -17,20 +17,20 @@ from importlib import import_module
 _nsq_processed_messages_queues = {}
 
 
-def load_worker(workers_dir=None):
+def load_worker(workers_module):
     """Load worker according to topic and channel options.
-    
-     Preload all of workers to make tornado options work like a magic, 
+
+     Preload all of workers to make tornado options work like a magic,
      so a worker can define custom options in worker's header.
 
      It only loads worker from file named as {topic}/{topic}_{channel}_worker.py,
-     eg. apiview/apiview_pageview_worker.py, the other files will be ignored.
-     
+     eg. demo/apiview_pageview_worker.py, the other files will be ignored.
+
     """
     # Preload all of workers
-    if workers_dir is None:
-        workers_dir = os.path.dirname(os.path.abspath(__file__))
-        
+    mod = import_module(workers_module)
+    workers_dir = os.path.dirname(os.path.abspath(mod.__file__))
+
     for d in os.listdir(workers_dir):
         dir_ = os.path.join(workers_dir, d)
         if os.path.isdir(dir_):
@@ -38,7 +38,7 @@ def load_worker(workers_dir=None):
             channels = []
             for f in os.listdir(dir_):
                 if not f.endswith("_worker.py"):
-                        continue
+                    continue
                 if not f.startswith('_') and f.endswith('.py'):
                     # topic_channel_worker
                     channels.append(f[len(topic) + 1:-len("_worker.py")])
@@ -46,7 +46,7 @@ def load_worker(workers_dir=None):
             for channel in channels:
                 try:
                     # preload
-                    _load_worker(topic, channel)
+                    _load_worker(topic, channel, workers_module)
                 except Exception, e:
                     logging.warning(e)
                     logging.warning(traceback.format_exc())
@@ -56,7 +56,8 @@ def load_worker(workers_dir=None):
 
     # Then load the worker object according to topic and channel options.
     try:
-        worker, name = _load_worker(options.topic, options.channel)
+        worker, name = _load_worker(options.topic, options.channel,
+                                    workers_module)
         if worker:
             return worker()
         else:
@@ -86,7 +87,7 @@ class Worker(object):
     def validate_message(self, message):
         """An optional callable that returns a boolean as to weather or not 
         this message should be processed.
-        
+
         """
         if isinstance(message.body, dict):
             return True
@@ -94,17 +95,17 @@ class Worker(object):
             return False
 
     @property
-    def tasks(self):
-        _tasks = {}
+    def handlers(self):
+        _handlers = {}
         for func in dir(self):
-            if func.endswith("_task"):
-                _tasks[func] = _task(getattr(self, func))
+            if func.endswith("_handler"):
+                _handlers[func] = _handler(getattr(self, func))
 
-        return _tasks
+        return _handlers
 
 
-def _task(func):
-    """Worker task decorator"""
+def _handler(func):
+    """Worker handler decorator"""
     q = _nsq_processed_messages_queues.get(func.__name__, None)
     if q is None:
         q = deque(maxlen=options.nsq_max_processed_messages_queue)
@@ -128,10 +129,10 @@ def _task(func):
     return wrapper
 
 
-def _load_worker(topic, channel):
+def _load_worker(topic, channel, workers_module):
     mod_name = "%s_%s_worker" % (topic, channel)
     mod = import_module(".%s" % mod_name,
-                        package="nsqworker.workers.%s" % topic)
+                        package="%s.%s" % (workers_module, topic))
 
     # topic_channel_worker to TopicChannelWorker
     name = "".join("%s%s" % (n[0].upper(), n[1:]) for n in mod_name.split("_"))
