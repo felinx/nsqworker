@@ -43,7 +43,7 @@ It is easy to implement a customize consumer follow this conventions.
 Customize your bootstrap.py
 ---
 
-    from nsqworker import run
+    from nsqworker.bootstrap import run
     # Customize workers_module which default value is nsqworker.workers(The root module of demo workers)
     # You should set it to yourpackage.workers.
     run("yourpackage.workers")

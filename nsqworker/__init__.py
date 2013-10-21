@@ -7,6 +7,5 @@
 #
 
 from nsqworker.workers.worker import Worker
-from nsqworker.bootstrap import run
 
-__version__ = '0.2'
+__version__ = '0.2.1'

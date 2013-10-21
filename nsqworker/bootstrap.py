@@ -7,15 +7,8 @@
 #
 
 import logging
-import sys
 import nsq
 from tornado.options import define, options
-
-try:
-    import nsqworker
-except ImportError:
-    import os
-    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
 from nsqworker.workers.worker import load_worker
 
