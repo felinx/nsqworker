@@ -31,14 +31,15 @@ def run(workers_module="nsqworker.workers", **kw):
         legacy = True
 
     if not legacy:
-        # nsq 0.5
+        # nsq 0.5+
         for name, handler in worker.handlers.iteritems():
-            r = nsq.Reader(options.topic, options.channel,
+            r = nsq.Reader(options.topic, name[0:-len("_handler")],
                            message_handler=handler,
                            lookupd_http_addresses=options.nsqlookupd_http_addresses,
                            **kw)
 
-            # override default preprocess and validate method with worker's method
+            # override default preprocess and validate method with worker's
+            # method
             r.validate_message = worker.validate_message
             r.preprocess_message = worker.preprocess_message
     else:
