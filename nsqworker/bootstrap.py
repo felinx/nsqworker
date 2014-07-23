@@ -8,6 +8,7 @@
 
 import logging
 import nsq
+from tornado import autoreload
 from tornado.options import define, options
 
 from nsqworker.workers.worker import load_worker
@@ -52,6 +53,9 @@ def run(workers_module="nsqworker.workers", **kw):
 
         r.validate_message = worker.validate_message
         r.preprocess_message = worker.preprocess_message
+
+    if options.debug:
+        autoreload.start()
 
     nsq.run()
 
