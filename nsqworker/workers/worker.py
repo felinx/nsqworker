@@ -6,10 +6,10 @@
 # Created on May 4, 2013
 #
 
+import time
 import os
 import traceback
 import logging
-from collections import deque
 from tornado import escape
 from tornado.options import options
 from importlib import import_module
@@ -68,11 +68,12 @@ def load_worker(workers_module):
 
 
 class Worker(object):
+
     def preprocess_message(self, message):
         """JSON decode preprocess
 
-        An optional callable that can alter the message data before other 
-        task functions are called. 
+        An optional callable that can alter the message data before other
+        task functions are called.
 
         We assume that the message body is a JSON here.
 
@@ -85,7 +86,7 @@ class Worker(object):
         return message
 
     def validate_message(self, message):
-        """An optional callable that returns a boolean as to weather or not 
+        """An optional callable that returns a boolean as to weather or not
         this message should be processed.
 
         """
@@ -99,30 +100,28 @@ class Worker(object):
         _handlers = {}
         for func in dir(self):
             if func.endswith("_handler"):
-                _handlers[func] = _handler(getattr(self, func))
+                _handlers[func] = _handler(self, getattr(self, func))
 
         return _handlers
 
 
-def _handler(func):
+def _handler(self, func):
     """Worker handler decorator"""
-    q = _nsq_processed_messages_queues.get(func.__name__, None)
-    if q is None:
-        q = deque(maxlen=options.nsq_max_processed_messages_queue)
-        _nsq_processed_messages_queues[func.__name__] = q
-
     def wrapper(message):
         logging.debug("Raw message: %s, %s", message.id, message.body)
-        if message.id not in q:
-            try:
-                r = func(message)
-                if r:
-                    q.append(message.id)
-
-                return r
-            except Exception, e:
-                logging.error(e)
-                logging.error(traceback.format_exc())
+        try:
+            now = time.time()
+            r = func(message)
+            logging.info(
+                "Task elapse(%s-%s): %s", self.__name__, func.__name__,
+                time.time() - now)
+            if r is None:
+                return True  # True by default
+        except Exception, e:
+            logging.debug(
+                "Error message: %s, %s", message.id, message.body)
+            logging.error(e)
+            logging.error(traceback.format_exc())
 
         return True
 
