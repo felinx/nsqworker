@@ -113,8 +113,8 @@ def _handler(self, func):
             now = time.time()
             r = func(message)
             logging.info(
-                "Task elapse(%s-%s): %s", self.__name__, func.__name__,
-                time.time() - now)
+                "Task elapse(%s-%s): %s", self.__class__.__name__,
+                func.__name__, time.time() - now)
             if r is None:
                 return True  # True by default
         except Exception, e:
