@@ -14,6 +14,7 @@ from tornado.options import define, options
 from nsqworker.workers.worker import load_worker
 
 define("topic", default="demo", help="nsq topic")
+define("topic_prefix", default="", help="nsq topic prefix")
 define("channel", default="pageview", help="nsq topic channel")
 define("nsq_max_processed_messages_queue", default=200,
        type=int, help="nsq max processed messages queue")
@@ -24,6 +25,7 @@ define("nsqlookupd_http_addresses", default="http://127.0.0.1:4161",
 def run(workers_module="nsqworker.workers", **kw):
     worker = load_worker(workers_module)
     logging.debug("Starting worker: %s" % worker)
+    topic = "%s%s" % (options.topic_prefix, options.topic)
 
     legacy = False
     try:
@@ -34,7 +36,7 @@ def run(workers_module="nsqworker.workers", **kw):
     if not legacy:
         # nsq 0.5+
         for name, handler in worker.handlers.iteritems():
-            r = nsq.Reader(options.topic, name[0:-len("_handler")],
+            r = nsq.Reader(topic, name[0:-len("_handler")],
                            message_handler=handler,
                            lookupd_http_addresses=options.nsqlookupd_http_addresses,
                            **kw)
@@ -46,7 +48,7 @@ def run(workers_module="nsqworker.workers", **kw):
     else:
         # nsq 0.4
         r = nsq.Reader(all_tasks=worker.handlers,
-                       topic=options.topic,
+                       topic=topic,
                        channel=options.channel,
                        lookupd_http_addresses=options.nsqlookupd_http_addresses,
                        **kw)
