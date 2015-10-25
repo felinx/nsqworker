@@ -36,7 +36,7 @@ def run(workers_module="nsqworker.workers", **kw):
     if not legacy:
         # nsq 0.5+
         for name, handler in worker.handlers.iteritems():
-            r = nsq.Reader(topic, name[0:-len("_handler")],
+            r = nsq.Reader(topic, "%s_%s" % (options.channel, name[0:-len("_handler")]),
                            message_handler=handler,
                            lookupd_http_addresses=options.nsqlookupd_http_addresses,
                            **kw)
