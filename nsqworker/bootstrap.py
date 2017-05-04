@@ -20,6 +20,7 @@ define("nsq_max_processed_messages_queue", default=200,
        type=int, help="nsq max processed messages queue")
 define("nsqlookupd_http_addresses", default="http://127.0.0.1:4161",
        multiple=True, help="nsqlookupd http addresses")
+define("debug", default=False)
 
 
 def run(workers_module="nsqworker.workers", **kw):
