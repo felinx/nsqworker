@@ -25,7 +25,7 @@ distutils.core.setup(
     description="nsqworker is a skeletal code of one way to implement a nsq consumer in Python base on pynsq",
     install_requires=[
         "six",
-    ]
+    ],
     classifiers=[
         "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 2.7",
