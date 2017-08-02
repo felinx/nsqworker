@@ -10,9 +10,11 @@ import time
 import os
 import traceback
 import logging
+
 from tornado import escape
 from tornado.options import options
-from importlib import import_module
+
+from nsqworker.compat import import_module
 
 _nsq_processed_messages_queues = {}
 
@@ -47,7 +49,7 @@ def load_worker(workers_module):
                 try:
                     # preload
                     _load_worker(topic, channel, workers_module)
-                except Exception, e:
+                except Exception as e:
                     logging.warning(e)
                     logging.warning(traceback.format_exc())
 
@@ -62,7 +64,7 @@ def load_worker(workers_module):
             return worker()
         else:
             raise ImportError("%s not found!" % name)
-    except ImportError, e:
+    except ImportError as e:
         logging.error(traceback.format_exc())
         raise e
 
@@ -117,7 +119,7 @@ def _handler(self, func):
                 func.__name__, time.time() - now)
             if r is None:
                 return True  # True by default
-        except Exception, e:
+        except Exception as e:
             logging.debug(
                 "Error message: %s, %s", message.id, message.body)
             logging.error(e)
@@ -130,8 +132,8 @@ def _handler(self, func):
 
 def _load_worker(topic, channel, workers_module):
     mod_name = "%s_%s_worker" % (topic, channel)
-    mod = import_module(".%s" % mod_name,
-                        package="%s.%s" % (workers_module, topic))
+    pkg = "%s.%s" % (workers_module, topic)
+    mod = import_module(".%s" % mod_name, package=pkg)
 
     # topic_channel_worker to TopicChannelWorker
     name = "".join("%s%s" % (n[0].upper(), n[1:]) for n in mod_name.split("_"))
