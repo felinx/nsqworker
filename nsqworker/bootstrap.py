@@ -7,7 +7,9 @@
 #
 
 import logging
+
 import nsq
+from six import iteritems
 from tornado import autoreload
 from tornado.options import define, options
 
@@ -36,7 +38,7 @@ def run(workers_module="nsqworker.workers", **kw):
 
     if not legacy:
         # nsq 0.5+
-        for name, handler in worker.handlers.iteritems():
+        for name, handler in iteritems(worker.handlers):
             r = nsq.Reader(topic, "%s_%s" % (options.channel, name[0:-len("_handler")]),
                            message_handler=handler,
                            lookupd_http_addresses=options.nsqlookupd_http_addresses,

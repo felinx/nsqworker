@@ -23,4 +23,13 @@ distutils.core.setup(
     url="https://github.com/felinx/nsqworker",
     license="http://www.apache.org/licenses/LICENSE-2.0",
     description="nsqworker is a skeletal code of one way to implement a nsq consumer in Python base on pynsq",
+    install_requires=[
+        "six",
+    ],
+    classifiers=[
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.6",
+    ]
 )
