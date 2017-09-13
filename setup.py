@@ -12,7 +12,7 @@ try:
 except ImportError:
     pass
 
-version = "0.2.7"
+version = "0.2.8"
 
 distutils.core.setup(
     name="nsqworker",
