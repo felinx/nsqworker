@@ -12,18 +12,14 @@ import traceback
 import logging
 
 from tornado import escape
-from tornado.options import options
 
 from nsqworker.compat import import_module
 
 _nsq_processed_messages_queues = {}
 
 
-def load_worker(workers_module):
-    """Load worker according to topic and channel options.
-
-     Preload all of workers to make tornado options work like a magic,
-     so a worker can define custom options in worker's header.
+def load_worker(target_topic, target_channel, workers_module):
+    """Load worker according to target_topic and target_channel.
 
      It only loads worker from file named as {topic}/{topic}_{channel}_worker.py,
      eg. demo/apiview_pageview_worker.py, the other files will be ignored.
@@ -53,12 +49,8 @@ def load_worker(workers_module):
                     logging.warning(e)
                     logging.warning(traceback.format_exc())
 
-    # Enable tornado command line options
-    options.parse_command_line()
-
-    # Then load the worker object according to topic and channel options.
     try:
-        worker, name = _load_worker(options.topic, options.channel,
+        worker, name = _load_worker(target_topic, target_channel,
                                     workers_module)
         if worker:
             return worker()
