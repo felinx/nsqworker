@@ -12,10 +12,12 @@ from nsqworker import Worker
 
 define("demoname", "demo")
 
+logger = logging.getLogger(__name__)
+
 
 class DemoPageviewWorker(Worker):
     def demo_handler(self, message):
-        logging.info("%s: %s/%s, clicks %s", options.demoname,
+        logger.info("%s: %s/%s, clicks %s", options.demoname,
                      options.topic, options.channel, message.body.get("clicks", 1))
 
         return True

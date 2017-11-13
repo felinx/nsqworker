@@ -17,6 +17,8 @@ from nsqworker.compat import import_module
 
 _nsq_processed_messages_queues = {}
 
+logger = logging.getLogger(__name__)
+
 
 def load_worker(target_topic, target_channel, workers_module):
     """Load worker according to target_topic and target_channel.
@@ -46,8 +48,8 @@ def load_worker(target_topic, target_channel, workers_module):
                     # preload
                     _load_worker(topic, channel, workers_module)
                 except Exception as e:
-                    logging.warning(e)
-                    logging.warning(traceback.format_exc())
+                    logger.warning(e)
+                    logger.warning(traceback.format_exc())
 
     try:
         worker, name = _load_worker(target_topic, target_channel,
@@ -57,7 +59,7 @@ def load_worker(target_topic, target_channel, workers_module):
         else:
             raise ImportError("%s not found!" % name)
     except ImportError as e:
-        logging.error(traceback.format_exc())
+        logger.error(traceback.format_exc())
         raise e
 
 
@@ -75,7 +77,7 @@ class Worker(object):
         try:
             message.body = escape.json_decode(escape.utf8(message.body))
         except ValueError:
-            logging.error("Invalid JSON: %s", message.body)
+            logger.error("Invalid JSON: %s", message.body)
 
         return message
 
@@ -102,20 +104,20 @@ class Worker(object):
 def _handler(self, func):
     """Worker handler decorator"""
     def wrapper(message):
-        logging.debug("Raw message: %s, %s", message.id, message.body)
+        logger.debug("Raw message: %s, %s", message.id, message.body)
         try:
             now = time.time()
             r = func(message)
-            logging.info(
+            logger.info(
                 "Task elapse(%s-%s): %s", self.__class__.__name__,
                 func.__name__, time.time() - now)
             if r is None:
                 return True  # True by default
         except Exception as e:
-            logging.debug(
+            logger.debug(
                 "Error message: %s, %s", message.id, message.body)
-            logging.error(e)
-            logging.error(traceback.format_exc())
+            logger.error(e)
+            logger.error(traceback.format_exc())
 
         return True
 
