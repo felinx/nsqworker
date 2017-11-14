@@ -7,6 +7,8 @@ from nsqworker.workers.worker import load_worker
 from six import iteritems
 from tornado import autoreload
 
+logger = logging.getLogger(__name__)
+
 
 class Initiator(object):
     def __init__(self,
@@ -23,7 +25,7 @@ class Initiator(object):
 
     def run(self, workers_module="nsqworker.workers", debug=False, **kw):
         worker = load_worker(self._topic, self._channel, workers_module)
-        logging.debug("Starting worker: %s" % worker)
+        logger.debug("Starting worker: %s" % worker)
         topic = "%s%s" % (self._topic_prefix, self._topic)
 
         legacy = False
