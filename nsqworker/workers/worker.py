@@ -108,7 +108,7 @@ def _handler(self, func):
         try:
             now = time.time()
             r = func(message)
-            logger.info(
+            logger.debug(
                 "Task elapse(%s-%s): %s", self.__class__.__name__,
                 func.__name__, time.time() - now)
             if r is None:
