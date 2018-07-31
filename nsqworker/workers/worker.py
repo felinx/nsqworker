@@ -8,6 +8,7 @@
 
 import time
 import os
+import sys
 import traceback
 import logging
 
@@ -96,12 +97,18 @@ class Worker(object):
         _handlers = {}
         for func in dir(self):
             if func.endswith("_handler"):
-                _handlers[func] = _handler(self, getattr(self, func))
+                _handlers[func] = _handler(self, getattr(self, func), error_callback=self.handle_error)
 
         return _handlers
 
+    def handle_error(self, exec_info=None):
+        """
+        Overried this method to perform error handling.
+        """
+        pass
 
-def _handler(self, func):
+
+def _handler(self, func, error_callback=None):
     """Worker handler decorator"""
     def wrapper(message):
         logger.debug("Raw message: %s, %s", message.id, message.body)
@@ -116,8 +123,10 @@ def _handler(self, func):
         except Exception as e:
             logger.debug(
                 "Error message: %s, %s", message.id, message.body)
-            logger.error(e)
-            logger.error(traceback.format_exc())
+            exc_info = sys.exc_info()
+            logger.error(e, exc_info=exc_info)
+            if error_callback is not None:
+                error_callback(exc_info=exc_info)
 
         return True
 
