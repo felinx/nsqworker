@@ -8,4 +8,4 @@
 from nsqworker.initiator import Initiator
 from nsqworker.workers.worker import Worker
 
-__version__ = '0.2.9'
+__version__ = '0.2.10'
