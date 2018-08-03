@@ -101,7 +101,7 @@ class Worker(object):
 
         return _handlers
 
-    def handle_error(self, exec_info=None):
+    def handle_error(self, exc_info=None):
         """
         Overried this method to perform error handling.
         """
