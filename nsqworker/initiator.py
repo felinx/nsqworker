@@ -37,9 +37,12 @@ class Initiator(object):
         if not legacy:
             # nsq 0.5+
             for name, handler in iteritems(worker.handlers):
+                ch = "%s_%s" % (self._channel, name[0:-len("_handler")])
+                if hasattr(handler, "_channel"):
+                    ch = getattr(handler, "_channel")
                 r = nsq.Reader(
                     topic,
-                    "%s_%s" % (self._channel, name[0:-len("_handler")]),
+                    ch,
                     message_handler=handler,
                     lookupd_http_addresses=self._nsqlookupd_http_addresses,
                     **kw)

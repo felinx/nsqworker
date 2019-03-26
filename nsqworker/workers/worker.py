@@ -11,6 +11,7 @@ import os
 import sys
 import traceback
 import logging
+import functools
 
 from tornado import escape
 
@@ -110,6 +111,7 @@ class Worker(object):
 
 def _handler(self, func, error_callback=None):
     """Worker handler decorator"""
+    @functools.wraps(func)
     def wrapper(message):
         logger.debug("Raw message: %s, %s", message.id, message.body)
         try:
