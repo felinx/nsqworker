@@ -1,3 +1,5 @@
+
+
 Overview
 --------
 
@@ -15,6 +17,8 @@ Demo
 Go to nsqworker root folder and run:
 
     python bootstrap.py
+
+The default command-line options are `--topic=demo` and `--channel=pageview`.
 
 Publish a message to topic demo:
 
